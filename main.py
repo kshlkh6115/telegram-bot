@@ -5,8 +5,8 @@ import pandas as pd
 import ccxt
 import os
 
-BOT_TOKEN = os.environ['BOT_TOKEN']
-CHAT_ID = os.environ['CHAT_ID']
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
 
 symbols = ["BTC/USDT", "ETH/USDT"]
 rsi_period = 14
@@ -36,9 +36,10 @@ def calculate_indicators(df):
     return df
 
 def send_telegram(message):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    params = {"chat_id": CHAT_ID, "text": message}
-    requests.get(url, params=params)
+    if BOT_TOKEN and CHAT_ID:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        params = {"chat_id": CHAT_ID, "text": message}
+        requests.get(url, params=params)
 
 def check_signals():
     for symbol in symbols:
@@ -59,9 +60,11 @@ def check_signals():
 %K: {latest['%K']:.2f}, RSI: {latest['RSI']:.2f}"""
                     send_telegram(msg)
             except Exception as e:
-                print(f"[{symbol} - {tf}] 오류 발생:", e)
+                print(f"[{symbol} - {tf}] 오류:", e)
 
 if __name__ == "__main__":
     while True:
+        print("🔄 시그널 체크 중...")
         check_signals()
+        print("⏳ 4시간 대기...")
         time.sleep(60 * 60 * 4)
